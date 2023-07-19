@@ -9,7 +9,6 @@ const MyNfts = () => {
   const [count] = useState(4);
   const [collection, setCollection] = useState([]);
   const [key, setKey] = useState(0);
-
   const getCollection = () => {
     if (account) {
       const filteredNFTs = nfts.filter(
@@ -31,7 +30,7 @@ const MyNfts = () => {
     setKey((prevKey) => prevKey + 1);
   }, [nfts]);
 
-  if (account) return <></>;
+  if (!account) return <></>;
 
   return (
     <div className="bg-[#151c25] gradient-bg-artworks">
@@ -83,7 +82,11 @@ const Card = ({ nft }: any) => {
       <div className="flex justify-between items-center mt-3 text-white">
         <div className="flex flex-col">
           <small className="text-xs">Current Price</small>
-          <p className="text-sm font-semibold">{nft.price} MATIC</p>
+          {nft?.price > 0 ? (
+            <p className="text-sm font-semibold">{nft?.price} MATIC</p>
+          ) : (
+            <p className="text-sm font-semibold text-red-600">unavailable</p>
+          )}
         </div>
 
         <button

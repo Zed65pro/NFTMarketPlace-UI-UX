@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import {
+  fetchNFTs,
+  fetchTransactions,
   handleAccountOnRefresh,
   isWalletConnected,
 } from "./Blockchain.services";
@@ -14,16 +16,21 @@ import MyNfts from "./components/MyNfts";
 import ShowNFT from "./components/ShowNFT";
 import Transactions from "./components/Transactions";
 import UpdateNFT from "./components/UpdateNFT";
-import { getGlobalState } from "./store";
+import { getGlobalState, useGlobalState } from "./store";
 
 const App = () => {
   useEffect(() => {
     isWalletConnected();
     handleAccountOnRefresh();
-    //  getAllNFTs();
+    fetchTransactions();
+    if (getGlobalState("connectedAccount")) fetchNFTs();
   }, []);
+  const account = useGlobalState("connectedAccount");
+  // const nfts = useGlobalState("nfts");
+  // const transactions = useGlobalState("transactions");
+  // console.log(nfts);
+  // console.log(transactions);
 
-  const account = getGlobalState("connectedAccount");
   return (
     <div className="min-h-screen">
       <div className="gradient-bg-hero">

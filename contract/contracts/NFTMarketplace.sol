@@ -11,19 +11,35 @@ contract NFTMarketplace is ERC721, Ownable {
     
     mapping(uint256 => uint256) private _tokenPrices;
     mapping(uint256 => address) private _tokenOwners;
+    mapping(uint256 => string) private _tokenURI;
+    mapping(uint256 => string) private _tokenTitle;
+    mapping(uint256 => string) private _tokenDescription;
     mapping(uint256 => address) private _tokenApprovals;
     
     event TokenListed(uint256 tokenId, uint256 price);
     event TokenSold(uint256 tokenId, address buyer, uint256 price);
 
+    struct TransactionStruct {
+        uint256 id;
+        address to;
+        address from;
+        uint256 price;
+        string title;
+        // uint256 timestamp;
+    }
+    TransactionStruct[] transactions;
+
     constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {}
 
-    function mintToken(address _to, uint256 _price) external {
+    function mintToken(address _to, uint256 _price,string memory _URI, string memory _title, string memory _description) external {
         _tokenIds.increment();
         uint256 newTokenId = _tokenIds.current();
         _safeMint(_to, newTokenId);
         _setTokenPrice(newTokenId, _price);
         _tokenOwners[newTokenId] = _to;
+        _tokenURI[newTokenId] = _URI;
+        _tokenTitle[newTokenId] = _title;
+        _tokenDescription[newTokenId] = _description;
     }
 
     function listForSale(uint256 _tokenId, uint256 _price) external {
@@ -52,6 +68,12 @@ contract NFTMarketplace is ERC721, Ownable {
         if (msg.value > tokenPrice) {
             payable(msg.sender).transfer(msg.value - tokenPrice);
         }
+
+        transactions.push(
+            TransactionStruct(
+            _tokenId,msg.sender,tokenOwner,tokenPrice,_tokenTitle[_tokenId]
+            )
+        );
         
         emit TokenSold(_tokenId, msg.sender, tokenPrice);
     }
@@ -61,7 +83,7 @@ contract NFTMarketplace is ERC721, Ownable {
     }
     
     function getOwnerOfToken(uint256 _tokenId) external view returns (address) {
-        return ownerOf(_tokenId);
+        return _tokenOwners[_tokenId];
     }
     
     function approve(address _to, uint256 _tokenId) override public {
@@ -79,11 +101,28 @@ contract NFTMarketplace is ERC721, Ownable {
         _tokenPrices[_tokenId] = _price;
     }
     
+    function updateTokenPrice(address tokenOwner,uint256 _tokenId, uint256 _price) public {
+        require(tokenOwner == msg.sender,"No permission to change the token price");
+        _tokenPrices[_tokenId] = _price;
+    }
+
     function _removeTokenPrice(uint256 _tokenId) internal {
         delete _tokenPrices[_tokenId];
     }
 
     function getTokenIds() external view returns (Counters.Counter memory) {
         return _tokenIds;
+    }
+
+    function getNFTData(uint256 _tokenId) external view returns (address, uint256 ,string memory , string memory , string memory ) {
+        return (_tokenOwners[_tokenId],
+        _tokenPrices[_tokenId],
+        _tokenURI[_tokenId] ,
+        _tokenTitle[_tokenId], 
+        _tokenDescription[_tokenId]);
+    }
+
+    function getTransactions() external view returns (TransactionStruct[] memory) {
+        return transactions;
     }
 }

@@ -12,7 +12,6 @@ const Transactions = () => {
   const getCollection = () => {
     return transactions.slice(0, end);
   };
-
   useEffect(() => {
     setCollection(getCollection());
   }, [transactions, end]);
@@ -27,7 +26,7 @@ const Transactions = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-4 lg:gap-2 py-2.5">
           {collection.map((tx: any) => (
             <div
-              key={tx.id}
+              key={`${tx.id} ${tx.to} ${tx.from}`}
               className="flex justify-between items-center border border-pink-500 text-gray-400 w-full shadow-xl shadow-black rounded-md overflow-hidden bg-gray-800 my-2 p-3"
             >
               <div className="rounded-md shadow-sm shadow-pink-500 p-2">
@@ -39,7 +38,7 @@ const Transactions = () => {
                 <small className="flex flex-row justify-start items-center">
                   <span className="mr-1">Received by</span>
                   <a href="#" className="text-pink-500 mr-2">
-                    {truncate(tx.owner, 4, 4, 11)}
+                    {truncate(tx.to, 4, 4, 11)}
                   </a>
                   <a href="#">
                     <MdOpenInNew />

@@ -71,7 +71,11 @@ const Card = ({ nft }: any) => {
       <div className="flex justify-between items-center mt-3 text-white">
         <div className="flex flex-col">
           <small className="text-xs">Current Price</small>
-          <p className="text-sm font-semibold">{nft.price} MATIC</p>
+          {nft?.price > 0 ? (
+            <p className="text-sm font-semibold">{nft?.price} MATIC</p>
+          ) : (
+            <p className="text-sm font-semibold text-red-600">unavailable</p>
+          )}
         </div>
 
         <button

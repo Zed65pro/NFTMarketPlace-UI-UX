@@ -47,20 +47,27 @@ const CreateNFT = () => {
     try {
       const created = await client.add(fileUrl);
       const metadataURI = `https://ipfs.io/ipfs/${created.path}`;
-      const nft = { title, price, description, metadataURI };
+      const account = getGlobalState("connectedAccount");
+      const supply = await getTotalSupply();
+
+      const nft = {
+        title,
+        price,
+        description,
+        metadataURI,
+        owner: account,
+        id: supply,
+        // timestamp: Math.floor(Date.now() / 1000)
+      };
 
       setLoadingMsg("Intializing transaction...");
       setFileUrl(metadataURI);
-      const res = await mintToken(nft.price);
 
+      const res = await mintToken(nft);
       if (!res) throw new Error();
 
-      const account = getGlobalState("connectedAccount");
-      const supply = await getTotalSupply();
-      const _nft = { ...nft, owner: account, id: supply };
-
       const nfts = getGlobalState("nfts");
-      setGlobalState("nfts", [...nfts, _nft]);
+      setGlobalState("nfts", [...nfts, nft]);
 
       resetForm();
       setAlert("Minting completed...", "green");

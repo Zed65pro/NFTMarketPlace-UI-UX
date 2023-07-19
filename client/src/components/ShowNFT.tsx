@@ -34,16 +34,17 @@ const ShowNFT = () => {
       const account = getGlobalState("connectedAccount");
       const nfts = getGlobalState("nfts");
       const _updatedNFTs = nfts.map((item: any) =>
-        item.id === nft.id ? { ...item, owner: account } : item
+        item.id === nft.id ? { ...item, price: 0.0, owner: account } : item
       );
       setGlobalState("nfts", _updatedNFTs);
 
       //Add a transaction
       const _transaction = {
-        ...nft,
-        owner: account,
+        id: nft.id,
         from: nft.owner,
         to: account,
+        title: nft.title,
+        price: nft.price,
       };
       const transactions = getGlobalState("transactions");
       setGlobalState("transactions", [...transactions, _transaction]);
@@ -105,12 +106,18 @@ const ShowNFT = () => {
 
               <div className="flex flex-col">
                 <small className="text-xs">Current Price</small>
-                <p className="text-sm font-semibold">{nft?.price} MATIC</p>
+                {nft?.price > 0 ? (
+                  <p className="text-sm font-semibold">{nft?.price} MATIC</p>
+                ) : (
+                  <p className="text-sm font-semibold text-red-600">
+                    unavailable
+                  </p>
+                )}
               </div>
             </div>
           </div>
           <div className="flex justify-between items-center space-x-2">
-            {connectedAccount == nft?.owner ? (
+            {connectedAccount?.toLowerCase() === nft?.owner.toLowerCase() ? (
               <button
                 className="flex flex-row justify-center items-center
                 w-full text-[#e32970] text-md border-[#e32970]
@@ -123,7 +130,7 @@ const ShowNFT = () => {
               >
                 Change Price
               </button>
-            ) : (
+            ) : nft?.price > 0 ? (
               <button
                 className="flex flex-row justify-center items-center
                 w-full text-white text-md bg-[#e32970]
@@ -135,6 +142,20 @@ const ShowNFT = () => {
                 onClick={handleNFTPurchase}
               >
                 Purchase Now
+              </button>
+            ) : (
+              <button
+                className="flex flex-row justify-center items-center
+              w-full text-white text-md bg-[#e4241d]
+              hover:bg-[#bd255f] py-2 px-5 rounded-full
+              drop-shadow-xl border border-transparent
+              hover:bg-transparent hover:text-[#f45d42]
+              hover:border hover:border-[#bd255f]
+              focus:outline-none focus:ring mt-5"
+                onClick={handleNFTPurchase}
+                disabled={true}
+              >
+                Token is not listed yet
               </button>
             )}
           </div>

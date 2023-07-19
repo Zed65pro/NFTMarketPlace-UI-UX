@@ -13,4 +13,4 @@ npx hardhat run scripts/deploy.js --network mumbai
 ```
 
 CA:
-0x36DfBCaFA3ecc756025b37C7a7B76319670d99B0
+0x42449c4B347768f0cb527C787Ac580C76fd8efbD

@@ -63,15 +63,59 @@ const getContract = async () => {
   return contract;
 };
 
+export const fetchNFTs = async () => {
+  // Fetch NFT metadata for each token ID
+  const contract = await getContract();
+  const supply = await contract.getTokenIds();
+  const tokenIds = Array.from(Array(parseInt(supply)), (_, index) => index + 1);
+  // const data = await contract.getNFTData(tokenId);
+  // const [tokenOwner, tokenURI, tokenTitle, tokenDescription, tokenPrice] =
+  //   data;
+  // const nft = {owner:tokenOwner,metadataURI:tokenURI,title:tokenTitle,description:tokenDescription,price:tokenPrice,timestamp}
+
+  const nftPromises = tokenIds.map(async (tokenId) => {
+    const tokenData = await contract.getNFTData(tokenId);
+    return {
+      id: tokenId,
+      owner: tokenData[0],
+      price: ethers.utils.formatEther(tokenData[1]),
+      metadataURI: tokenData[2],
+      title: tokenData[3],
+      description: tokenData[4],
+    };
+  });
+
+  // Wait for all promises to resolve
+  const nftData = await Promise.all(nftPromises);
+  // Set the NFTs in state
+  setGlobalState("nfts", nftData);
+};
+
+export const fetchTransactions = async () => {
+  // Fetch NFT metadata for each token ID
+  const contract = await getContract();
+
+  let _transactions = await contract.getTransactions();
+  _transactions = _transactions.map((transaction: any) => ({
+    ...transaction,
+    price: ethers.utils.formatEther(transaction.price),
+  }));
+  // Set the NFTs in state
+  setGlobalState("transactions", _transactions);
+};
+
 // Mint a new token
-export async function mintToken(price: string) {
+export async function mintToken(nft: any) {
   const account = getGlobalState("connectedAccount");
 
   try {
     const contract = await getContract();
     const mintTx = await contract.mintToken(
       account,
-      ethers.utils.parseEther(price)
+      ethers.utils.parseEther(nft.price),
+      nft.metadataURI,
+      nft.title,
+      nft.description
     );
     await mintTx.wait();
 
@@ -83,11 +127,49 @@ export async function mintToken(price: string) {
   }
 }
 
+//total supply
 export const getTotalSupply = async () => {
   const contract = await getContract();
   const supply = await contract.getTokenIds();
   return parseInt(supply);
 };
+
+//setprice
+export async function updateNFT(
+  tokenOwner: string,
+  tokenId: number,
+  price: string
+) {
+  try {
+    const contract = await getContract();
+    const mintTx = await contract.updateTokenPrice(
+      tokenOwner,
+      tokenId,
+      ethers.utils.parseEther(price)
+    );
+    await mintTx.wait();
+
+    console.log("updated succesfuly");
+    return true;
+  } catch (error) {
+    console.error("Error updating nft:", error);
+    return false;
+  }
+}
+
+//purchase token
+export async function buyNFT(tokenId: number, price: string) {
+  try {
+    const contract = await getContract();
+    const buyTx = await contract.buyToken(tokenId, {
+      value: ethers.utils.parseEther(price),
+    });
+    await buyTx.wait();
+    console.log("Token purchased successfully");
+  } catch (error) {
+    console.error("Error buying token:", error);
+  }
+}
 
 // // Get the price of a token
 // async function getTokenPrice(contract, tokenId) {
@@ -119,32 +201,3 @@ export const getTotalSupply = async () => {
 //     console.error('Error approving token transfer:', error);
 //   }
 // }
-
-//setprice
-export async function updateNFT(tokenId: number, price: string) {
-  const account = getGlobalState("connectedAccount");
-
-  try {
-    const contract = await getContract();
-    const mintTx = await contract._setTokenPrice(tokenId, price);
-    await mintTx.wait();
-
-    console.log("updated succesfuly");
-  } catch (error) {
-    console.error("Error updating nft:", error);
-  }
-}
-
-//setprice
-export async function buyNFT(tokenId: number, price: string) {
-  try {
-    const contract = await getContract();
-    const buyTx = await contract.buyToken(tokenId, {
-      value: ethers.utils.parseEther(price),
-    });
-    await buyTx.wait();
-    console.log("Token purchased successfully");
-  } catch (error) {
-    console.error("Error buying token:", error);
-  }
-}

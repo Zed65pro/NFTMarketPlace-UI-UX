@@ -28,7 +28,8 @@ const UpdateNFT = () => {
       setLoadingMsg("Price updating...");
       setGlobalState("updateModal", "scale-0");
 
-      await updateNFT(nft.id, price);
+      const res = await updateNFT(nft.owner, nft.id, price);
+      if (!res) throw new Error();
       setAlert("Price updated...", "green");
 
       const nfts = getGlobalState("nfts");

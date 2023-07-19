@@ -20,7 +20,7 @@ const { setGlobalState, useGlobalState, getGlobalState } =
     showModal: "scale-0",
     alert: { show: false, msg: "", color: "" },
     loading: { show: false, msg: "" },
-    connectedAccount: "",
+    connectedAccount: null,
     nft: null,
     nfts: [],
     transactions: [],

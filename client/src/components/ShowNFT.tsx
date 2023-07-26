@@ -3,16 +3,38 @@ import { FaTimes } from "react-icons/fa";
 import {
   useGlobalState,
   setGlobalState,
-  truncate,
+  shortenWalletAddress,
   setAlert,
   getGlobalState,
 } from "../store";
-import { buyNFT } from "../Blockchain.services";
+import { buyNFT, updateNFT } from "../Blockchain.services";
 
 const ShowNFT = () => {
   const [showModal] = useGlobalState("showModal");
   const [connectedAccount] = useGlobalState("connectedAccount");
   const [nft] = useGlobalState("nft");
+
+  const onUnlistToken = async () => {
+    setGlobalState("showModal", "scale-0");
+    setGlobalState("loading", {
+      show: true,
+      msg: "unlisting your token...",
+    });
+    try {
+      const res = await updateNFT(nft.owner, nft.id, "0");
+      if (!res) throw new Error();
+
+      setAlert("Unlisted successfuly...", "green");
+      const nfts = getGlobalState("nfts");
+      const _updatedNFTs = nfts.map((item: any) =>
+        item.id === nft.id ? { ...item, price: 0.0 } : item
+      );
+      setGlobalState("nfts", _updatedNFTs);
+    } catch (error) {
+      console.log("Error transfering NFT: ", error);
+      setAlert("Unlisting failed...", "red");
+    }
+  };
 
   const onChangePrice = () => {
     setGlobalState("showModal", "scale-0");
@@ -27,7 +49,8 @@ const ShowNFT = () => {
     });
 
     try {
-      await buyNFT(nft.id, nft.price);
+      const res = await buyNFT(nft.id, nft.price);
+      if (!res) throw new Error();
       setAlert("Transfer completed...", "green");
 
       //Update NFT owner
@@ -48,12 +71,41 @@ const ShowNFT = () => {
       };
       const transactions = getGlobalState("transactions");
       setGlobalState("transactions", [...transactions, _transaction]);
-
-      // window.location.reload();
     } catch (error) {
       console.log("Error transfering NFT: ", error);
       setAlert("Purchase failed...", "red");
     }
+  };
+
+  const priceCheck = () => {
+    return nft?.price > 0 ? (
+      <button
+        className="flex flex-row justify-center items-center
+          w-full text-white text-md bg-[#e32970]
+          hover:bg-[#bd255f] py-2 px-5 rounded-full
+          drop-shadow-xl border border-transparent
+          hover:bg-transparent hover:text-[#e32970]
+          hover:border hover:border-[#bd255f]
+          focus:outline-none focus:ring mt-5"
+        onClick={handleNFTPurchase}
+      >
+        Purchase Now
+      </button>
+    ) : (
+      <button
+        className="flex flex-row justify-center items-center
+        w-full text-white text-md bg-[#e4241d]
+        hover:bg-[#bd255f] py-2 px-5 rounded-full
+        drop-shadow-xl border border-transparent
+        hover:bg-transparent hover:text-[#f45d42]
+        hover:border hover:border-[#bd255f]
+        focus:outline-none focus:ring mt-5"
+        onClick={handleNFTPurchase}
+        disabled={true}
+      >
+        Token is not listed yet
+      </button>
+    );
   };
 
   return (
@@ -99,7 +151,9 @@ const ShowNFT = () => {
                 <div className="flex flex-col justify-center items-start">
                   <small className="text-white font-bold">@owner</small>
                   <small className="text-pink-800 font-semibold">
-                    {nft?.owner ? truncate(nft.owner, 4, 4, 11) : "..."}
+                    {nft?.owner
+                      ? shortenWalletAddress(nft.owner, 4, 4, 11)
+                      : "..."}
                   </small>
                 </div>
               </div>
@@ -110,7 +164,7 @@ const ShowNFT = () => {
                   <p className="text-sm font-semibold">{nft?.price} MATIC</p>
                 ) : (
                   <p className="text-sm font-semibold text-red-600">
-                    unavailable
+                    Not listed
                   </p>
                 )}
               </div>
@@ -118,45 +172,36 @@ const ShowNFT = () => {
           </div>
           <div className="flex justify-between items-center space-x-2">
             {connectedAccount?.toLowerCase() === nft?.owner.toLowerCase() ? (
-              <button
-                className="flex flex-row justify-center items-center
+              <>
+                <button
+                  className="flex flex-row justify-center items-center
                 w-full text-[#e32970] text-md border-[#e32970]
                 py-2 px-5 rounded-full bg-transparent 
                 drop-shadow-xl border hover:bg-[#bd255f]
                 hover:bg-transparent hover:text-white
                 hover:border hover:border-[#bd255f]
                 focus:outline-none focus:ring mt-5"
-                onClick={onChangePrice}
-              >
-                Change Price
-              </button>
-            ) : nft?.price > 0 ? (
-              <button
-                className="flex flex-row justify-center items-center
-                w-full text-white text-md bg-[#e32970]
-                hover:bg-[#bd255f] py-2 px-5 rounded-full
-                drop-shadow-xl border border-transparent
-                hover:bg-transparent hover:text-[#e32970]
+                  onClick={onChangePrice}
+                >
+                  {nft.price > 0 ? "Change Price" : "List token"}
+                </button>
+                {nft?.price > 0 && (
+                  <button
+                    className="flex flex-row justify-center items-center
+                w-full text-[#e32970] text-md border-[#e32970]
+                py-2 px-5 rounded-full bg-transparent 
+                drop-shadow-xl border hover:bg-[#bd255f]
+                hover:bg-transparent hover:text-white
                 hover:border hover:border-[#bd255f]
                 focus:outline-none focus:ring mt-5"
-                onClick={handleNFTPurchase}
-              >
-                Purchase Now
-              </button>
+                    onClick={onUnlistToken}
+                  >
+                    Unlist Token
+                  </button>
+                )}
+              </>
             ) : (
-              <button
-                className="flex flex-row justify-center items-center
-              w-full text-white text-md bg-[#e4241d]
-              hover:bg-[#bd255f] py-2 px-5 rounded-full
-              drop-shadow-xl border border-transparent
-              hover:bg-transparent hover:text-[#f45d42]
-              hover:border hover:border-[#bd255f]
-              focus:outline-none focus:ring mt-5"
-                onClick={handleNFTPurchase}
-                disabled={true}
-              >
-                Token is not listed yet
-              </button>
+              priceCheck()
             )}
           </div>
         </div>

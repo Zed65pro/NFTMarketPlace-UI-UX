@@ -11,6 +11,9 @@ interface GlobalState {
   nfts: any;
   transactions: any;
   contract: any;
+  artworkCount: number;
+  artistCount: number;
+  transactionCount: number;
 }
 
 const { setGlobalState, useGlobalState, getGlobalState } =
@@ -25,14 +28,17 @@ const { setGlobalState, useGlobalState, getGlobalState } =
     nfts: [],
     transactions: [],
     contract: null,
+    artworkCount: 0,
+    artistCount: 0,
+    transactionCount: 0,
   });
 
-const setAlert = (msg: string, color = "green") => {
+const setAlert = (msg: string, color = "green", timer = 4500) => {
   setGlobalState("loading", { show: false, msg: "" });
   setGlobalState("alert", { show: true, msg, color });
   setTimeout(() => {
     setGlobalState("alert", { show: false, msg: "", color });
-  }, 6000);
+  }, timer);
 };
 
 const setLoadingMsg = (msg: string) => {
@@ -40,15 +46,16 @@ const setLoadingMsg = (msg: string) => {
   setGlobalState("loading", { ...loading, msg });
 };
 
-const truncate = (
+// TODO: ADD DOCUMENTATION
+const shortenWalletAddress = (
   text: string,
   startChars: number,
   endChars: number,
   maxLength: number
 ) => {
   if (text.length > maxLength) {
-    var start = text.substring(0, startChars);
-    var end = text.substring(text.length - endChars, text.length);
+    let start = text.substring(0, startChars);
+    let end = text.substring(text.length - endChars, text.length);
     while (start.length + end.length < maxLength) {
       start = start + ".";
     }
@@ -63,5 +70,5 @@ export {
   getGlobalState,
   setAlert,
   setLoadingMsg,
-  truncate,
+  shortenWalletAddress,
 };

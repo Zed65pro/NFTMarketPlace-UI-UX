@@ -1,12 +1,18 @@
 import Identicon from "react-identicons";
-import { setGlobalState, useGlobalState, truncate } from "../store";
+import { setGlobalState, useGlobalState, shortenWalletAddress } from "../store";
 
 const Hero = () => {
   const [connectedAccount] = useGlobalState("connectedAccount");
+  const [artworkCount] = useGlobalState("artworkCount");
+  const [transactionCount] = useGlobalState("transactionCount");
+  const [artistCount] = useGlobalState("artistCount");
+
   const onCreatedNFT = () => {
     if (!connectedAccount) return alert("Must be connected to MetaMask");
     setGlobalState("modal", "scale-100");
   };
+
+  console.log(artworkCount);
 
   return (
     <div
@@ -35,20 +41,22 @@ const Hero = () => {
           </button>
         </div>
 
-        <div className="w-3/4 flex justify-between items-center mt-5">
-          <div>
-            <p className="text-white font-bold">1231k</p>
-            <small className="text-gray-300">User</small>
+        {connectedAccount && (
+          <div className="w-3/4 flex justify-between items-center mt-5">
+            <div className="flex flex-col justify-center items-center">
+              <p className="text-white font-bold">{artistCount}</p>
+              <small className="text-gray-300">Artists</small>
+            </div>
+            <div className="flex flex-col justify-center items-center">
+              <p className="text-white font-bold">{transactionCount}</p>
+              <small className="text-gray-300">Transactions</small>
+            </div>
+            <div className="flex flex-col justify-center items-center">
+              <p className="text-white font-bold ">{artworkCount}</p>
+              <small className="text-gray-300">Artworks</small>
+            </div>
           </div>
-          <div>
-            <p className="text-white font-bold">152k</p>
-            <small className="text-gray-300">Artwork</small>
-          </div>
-          <div>
-            <p className="text-white font-bold">200k</p>
-            <small className="text-gray-300">Artist</small>
-          </div>
-        </div>
+        )}
       </div>
 
       <div
@@ -69,7 +77,7 @@ const Hero = () => {
           <div>
             <p className="text-white font-semibold">
               {connectedAccount
-                ? truncate(connectedAccount, 4, 4, 11)
+                ? shortenWalletAddress(connectedAccount, 4, 4, 11)
                 : "Connect Your Wallet"}
             </p>
             <small className="text-pink-800 font-bold">@you</small>

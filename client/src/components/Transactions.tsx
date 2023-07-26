@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { BiTransfer } from "react-icons/bi";
-import { MdOpenInNew } from "react-icons/md";
-import { useGlobalState, truncate } from "../store";
+import { useGlobalState, shortenWalletAddress, setAlert } from "../store";
+import copy from "clipboard-copy";
+
+const COPY_ALERT_TIMER = 900;
 
 const Transactions = () => {
   const [transactions] = useGlobalState("transactions");
@@ -12,12 +14,18 @@ const Transactions = () => {
   const getCollection = () => {
     return transactions.slice(0, end);
   };
+
+  const handleCopyToClipboard = (address: string) => {
+    copy(address); // Copy the address to the clipboard
+    setAlert("Copied Address to Clipboard", "green", COPY_ALERT_TIMER);
+  };
+
   useEffect(() => {
     setCollection(getCollection());
   }, [transactions, end]);
 
   return (
-    <div className="bg-[#151c25]">
+    <div className="bg-[#151c25]" id="transactions">
       <div className="w-4/5 py-10 mx-auto">
         <h4 className="text-white text-3xl font-bold uppercase text-gradient">
           {collection.length > 0 ? "Latest Transactions" : "No Transaction Yet"}
@@ -36,13 +44,22 @@ const Transactions = () => {
               <div>
                 <h4 className="text-sm">{tx.title} Transfered</h4>
                 <small className="flex flex-row justify-start items-center">
+                  <span className="mr-1">Transferred by</span>
+                  <p
+                    className="text-pink-500 mr-2 cursor-pointer"
+                    onClick={() => handleCopyToClipboard(tx.from)}
+                  >
+                    {shortenWalletAddress(tx.from, 4, 4, 11)}
+                  </p>
+                </small>
+                <small className="flex flex-row justify-start items-center">
                   <span className="mr-1">Received by</span>
-                  <a href="#" className="text-pink-500 mr-2">
-                    {truncate(tx.to, 4, 4, 11)}
-                  </a>
-                  <a href="#">
-                    <MdOpenInNew />
-                  </a>
+                  <p
+                    className="text-pink-500 mr-2 cursor-pointer"
+                    onClick={() => handleCopyToClipboard(tx.to)}
+                  >
+                    {shortenWalletAddress(tx.to, 4, 4, 11)}
+                  </p>
                 </small>
               </div>
 

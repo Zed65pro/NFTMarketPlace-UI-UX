@@ -1,7 +1,10 @@
 import { ethers } from "ethers";
-import { SESSION_STORAGE_KEY } from "./lib/constants";
 import { getGlobalState, setGlobalState } from "./store";
-import { contractAddress, contractAbi } from "./lib/constants";
+import {
+  contractAddress,
+  contractAbi,
+  SESSION_STORAGE_KEY,
+} from "./lib/constants";
 
 export const connectWallet = async () => {
   if (window.ethereum) {
@@ -63,15 +66,17 @@ const getContract = async () => {
   return contract;
 };
 
+const setNumberOfArtists = (nftData: any[]) => {
+  const allOwners = nftData.map((item: any) => item.owner);
+  const uniqueOwners = new Set(allOwners);
+  setGlobalState("artistCount", uniqueOwners.size);
+};
+
 export const fetchNFTs = async () => {
   // Fetch NFT metadata for each token ID
   const contract = await getContract();
   const supply = await contract.getTokenIds();
   const tokenIds = Array.from(Array(parseInt(supply)), (_, index) => index + 1);
-  // const data = await contract.getNFTData(tokenId);
-  // const [tokenOwner, tokenURI, tokenTitle, tokenDescription, tokenPrice] =
-  //   data;
-  // const nft = {owner:tokenOwner,metadataURI:tokenURI,title:tokenTitle,description:tokenDescription,price:tokenPrice,timestamp}
 
   const nftPromises = tokenIds.map(async (tokenId) => {
     const tokenData = await contract.getNFTData(tokenId);
@@ -88,6 +93,8 @@ export const fetchNFTs = async () => {
   // Wait for all promises to resolve
   const nftData = await Promise.all(nftPromises);
   // Set the NFTs in state
+  setNumberOfArtists(nftData);
+  setGlobalState("artworkCount", nftData.length);
   setGlobalState("nfts", nftData);
 };
 
@@ -100,7 +107,9 @@ export const fetchTransactions = async () => {
     ...transaction,
     price: ethers.utils.formatEther(transaction.price),
   }));
+  console.log(_transactions);
   // Set the NFTs in state
+  setGlobalState("transactionCount", _transactions.length);
   setGlobalState("transactions", _transactions);
 };
 
@@ -165,39 +174,22 @@ export async function buyNFT(tokenId: number, price: string) {
       value: ethers.utils.parseEther(price),
     });
     await buyTx.wait();
+
     console.log("Token purchased successfully");
+    return true;
   } catch (error) {
     console.error("Error buying token:", error);
+    return false;
   }
 }
 
-// // Get the price of a token
-// async function getTokenPrice(contract, tokenId) {
-//   try {
-//     const tokenPrice = await contract.getTokenPrice(tokenId);
-//     console.log('Token price:', ethers.utils.formatEther(tokenPrice));
-//   } catch (error) {
-//     console.error('Error getting token price:', error);
-//   }
-// }
-
-// // Get the owner of a token
-// async function getOwnerOfToken(contract, tokenId) {
-//   try {
-//     const owner = await contract.getOwnerOfToken(tokenId);
-//     console.log('Token owner:', owner);
-//   } catch (error) {
-//     console.error('Error getting token owner:', error);
-//   }
-// }
-
-// // Approve token transfer
-// async function approveTokenTransfer(contract, to, tokenId) {
-//   try {
-//     const approveTx = await contract.approve(to, tokenId);
-//     await approveTx.wait();
-//     console.log('Token transfer approved successfully');
-//   } catch (error) {
-//     console.error('Error approving token transfer:', error);
-//   }
-// }
+// Get the owner of a token
+export async function getOwnerOfToken(tokenId: string) {
+  try {
+    const contract = await getContract();
+    const owner = await contract.getOwnerOfToken(tokenId);
+    console.log("Token owner:", owner);
+  } catch (error) {
+    console.error("Error getting token owner:", error);
+  }
+}

@@ -16,33 +16,36 @@ import MyNfts from "./components/MyNfts";
 import ShowNFT from "./components/ShowNFT";
 import Transactions from "./components/Transactions";
 import UpdateNFT from "./components/UpdateNFT";
-import { getGlobalState, useGlobalState } from "./store";
+import { useGlobalState } from "./store";
 
 const App = () => {
+  const [account] = useGlobalState("connectedAccount");
   useEffect(() => {
     isWalletConnected();
     handleAccountOnRefresh();
-    fetchTransactions();
-    if (getGlobalState("connectedAccount")) fetchNFTs();
-  }, []);
-  const account = useGlobalState("connectedAccount");
-  // const nfts = useGlobalState("nfts");
-  // const transactions = useGlobalState("transactions");
-  // console.log(nfts);
-  // console.log(transactions);
+    if (account) fetchTransactions();
+    if (account) fetchNFTs();
+  }, [account]);
 
   return (
     <div className="min-h-screen">
-      <div className="gradient-bg-hero">
+      <div className={`gradient-bg-hero ${!account ? "min-h-screen" : ""}`}>
         <Header />
         <Hero />
+        {!account && (
+          <div className="flex justify-center items-center full-width py-24">
+            <p className="font-bold  text-gradient text-6xl">
+              Connect your wallet to preview the artworks
+            </p>
+          </div>
+        )}
       </div>
       {account && <MyNfts />}
-      <Artworks />
-      <Transactions />
-      <CreateNFT />
-      <ShowNFT />
-      <UpdateNFT />
+      {account && <Artworks />}
+      {account && <Transactions />}
+      {account && <CreateNFT />}
+      {account && <ShowNFT />}
+      {account && <UpdateNFT />}
       <Footer />
       <Alert />
       <Loading />

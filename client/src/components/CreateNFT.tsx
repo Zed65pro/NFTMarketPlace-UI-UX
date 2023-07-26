@@ -57,7 +57,6 @@ const CreateNFT = () => {
         metadataURI,
         owner: account,
         id: supply,
-        // timestamp: Math.floor(Date.now() / 1000)
       };
 
       setLoadingMsg("Intializing transaction...");
@@ -71,7 +70,6 @@ const CreateNFT = () => {
 
       resetForm();
       setAlert("Minting completed...", "green");
-      // window.location.reload();
     } catch (error) {
       console.log("Error uploading file: ", error);
       setAlert("Minting failed...", "red");
@@ -100,6 +98,25 @@ const CreateNFT = () => {
     setTitle("");
     setPrice("");
     setDescription("");
+  };
+
+  const handlePriceChange = (e: any) => {
+    const enteredValue = e.target.value;
+    const minValue = 0.01; // Minimum allowed value
+
+    // Convert the entered value to a number and round it to three decimal places
+    const roundedValue = parseFloat(parseFloat(enteredValue).toFixed(3));
+    // If the entered value is less than the minimum allowed value, set the state to the minimum value
+    if (enteredValue > 2000) {
+      setPrice("1000");
+      return;
+    }
+
+    if (roundedValue < minValue) {
+      setPrice(minValue.toFixed(2));
+    } else {
+      setPrice(roundedValue.toString());
+    }
   };
 
   return (
@@ -177,7 +194,7 @@ const CreateNFT = () => {
               min={0.01}
               name="price"
               placeholder="Price (MATIC)"
-              onChange={(e) => setPrice(e.target.value)}
+              onChange={handlePriceChange}
               value={price}
               required
             />

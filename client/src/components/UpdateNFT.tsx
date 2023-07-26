@@ -37,14 +37,30 @@ const UpdateNFT = () => {
         item.id === nft.id ? { ...item, price } : item
       );
       setGlobalState("nfts", _updatedNFTs);
-
-      // window.location.reload();
     } catch (error) {
       console.log("Error updating file: ", error);
       setAlert("Update failed...", "red");
     }
   };
 
+  const handlePriceChange = (e: any) => {
+    const enteredValue = e.target.value;
+    const minValue = 0.01; // Minimum allowed value
+    console.log(enteredValue);
+    // Convert the entered value to a number and round it to three decimal places
+    const roundedValue = parseFloat(parseFloat(enteredValue).toFixed(3));
+    // If the entered value is less than the minimum allowed value, set the state to the minimum value
+    if (enteredValue > 2000) {
+      setPrice("1000");
+      return;
+    }
+
+    if (roundedValue < minValue) {
+      setPrice(minValue.toFixed(2));
+    } else {
+      setPrice(roundedValue.toString());
+    }
+  };
   return (
     <div
       className={`fixed top-0 left-0 w-screen h-screen flex items-center
@@ -83,8 +99,9 @@ const UpdateNFT = () => {
               step={0.01}
               min={0.01}
               name="price"
+              value={price}
               placeholder="Price (MATIC)"
-              onChange={(e) => setPrice(e.target.value)}
+              onChange={handlePriceChange}
               required
             />
           </div>

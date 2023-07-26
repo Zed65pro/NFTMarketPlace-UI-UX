@@ -17,7 +17,7 @@ const Alert = () => {
         bg-[#151c25] shadow-xl shadow-[#e32970] rounded-xl
         min-w-min py-3 px-10"
       >
-        {alert.color == "red" ? (
+        {alert.color === "red" ? (
           <FaRegTimesCircle className="text-red-600 text-4xl" />
         ) : (
           <BsCheck2Circle className="text-green-600 text-4xl" />

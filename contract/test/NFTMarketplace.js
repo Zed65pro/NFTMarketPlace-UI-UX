@@ -1,53 +1,28 @@
 const { expect } = require("chai");
-// const { ethers } = require("ethers");
-const { BigNumber } = require("ethers");
 
 const {
   loadFixture,
 } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
 
 describe("NFTMarketplace", function () {
+  const tokenURI =
+    "https://ipfs.io/ipfs/QmUCJXcmfSdAARFwTg3oLVJtxxGUTMYg1kiJbApnwebvR5";
+  const tokenTitle = "Token Title";
+  const tokenDescription = "Token Description";
+  const tokenPrice = BigInt("1");
+  let nftMarketplace;
+  let owner;
+  let alice;
+  let bob;
+
   async function deployLoadingFixture() {
-    const tokenURI =
-      "https://ipfs.io/ipfs/QmUCJXcmfSdAARFwTg3oLVJtxxGUTMYg1kiJbApnwebvR5";
-    const tokenTitle = "Token Title";
-    const tokenDescription = "Token Description";
-    // const tokenPrice = ethers.parseEther("0.01");
-    // ethers.BigNumber.from(tokenPrice.toString())
-    // const tokenPrice = "0.01";
-    // const tokenPrice = ethers.parseUnits("0.01", 18); // Convert to BigNumber
-    const tokenPrice = BigInt("1");
-
-    const [owner, alice, bob] = await ethers.getSigners();
+    [owner, alice, bob] = await ethers.getSigners();
     const NFTMarketplace = await ethers.getContractFactory("NFTMarketplace");
-    const nftMarketplace = await NFTMarketplace.deploy(
-      "NFTMarketplace",
-      "NFTM"
-    );
-    // await nftMarketplace.deployed();
-
-    return {
-      nftMarketplace,
-      owner,
-      alice,
-      bob,
-      tokenURI,
-      tokenTitle,
-      tokenDescription,
-      tokenPrice,
-    };
+    nftMarketplace = await NFTMarketplace.deploy("NFTMarketplace", "NFTM");
   }
 
   it("should mint a new token", async function () {
-    const {
-      nftMarketplace,
-      owner,
-      alice,
-      tokenURI,
-      tokenTitle,
-      tokenDescription,
-      tokenPrice,
-    } = await loadFixture(deployLoadingFixture);
+    await loadFixture(deployLoadingFixture);
 
     await nftMarketplace
       .connect(owner)
@@ -67,15 +42,7 @@ describe("NFTMarketplace", function () {
   });
 
   it("should list a token for sale", async function () {
-    const {
-      nftMarketplace,
-      owner,
-      alice,
-      tokenURI,
-      tokenTitle,
-      tokenDescription,
-      tokenPrice,
-    } = await loadFixture(deployLoadingFixture);
+    await loadFixture(deployLoadingFixture);
 
     await nftMarketplace
       .connect(owner)
@@ -93,15 +60,7 @@ describe("NFTMarketplace", function () {
   });
 
   it("should cancel listing of a token", async function () {
-    const {
-      nftMarketplace,
-      owner,
-      alice,
-      tokenURI,
-      tokenTitle,
-      tokenDescription,
-      tokenPrice,
-    } = await loadFixture(deployLoadingFixture);
+    await loadFixture(deployLoadingFixture);
 
     await nftMarketplace
       .connect(owner)
@@ -121,16 +80,7 @@ describe("NFTMarketplace", function () {
   });
 
   it("should buy a token", async function () {
-    const {
-      nftMarketplace,
-      owner,
-      alice,
-      bob,
-      tokenURI,
-      tokenTitle,
-      tokenDescription,
-      tokenPrice,
-    } = await loadFixture(deployLoadingFixture);
+    await loadFixture(deployLoadingFixture);
 
     await nftMarketplace
       .connect(owner)
@@ -147,9 +97,7 @@ describe("NFTMarketplace", function () {
 
     const aliceBalanceBefore = await ethers.provider.getBalance(alice.address);
     const bobBalanceBefore = await ethers.provider.getBalance(bob.address);
-    const buyTx = await nftMarketplace
-      .connect(bob)
-      .buyToken(tokenId, { value: tokenPrice });
+    await nftMarketplace.connect(bob).buyToken(tokenId, { value: tokenPrice });
     const aliceBalanceAfter = await ethers.provider.getBalance(alice.address);
     const bobBalanceAfter = await ethers.provider.getBalance(bob.address);
 
@@ -184,16 +132,7 @@ describe("NFTMarketplace", function () {
   });
 
   it("should approve a token transfer", async function () {
-    const {
-      nftMarketplace,
-      owner,
-      alice,
-      bob,
-      tokenURI,
-      tokenTitle,
-      tokenDescription,
-      tokenPrice,
-    } = await loadFixture(deployLoadingFixture);
+    await loadFixture(deployLoadingFixture);
 
     await nftMarketplace
       .connect(owner)
